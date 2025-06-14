@@ -32,7 +32,7 @@ interface Campaign {
 export function BOFUSection() {
   const [selectedArtist, setSelectedArtist] = useState("all")
   const [selectedCampaign, setSelectedCampaign] = useState("all")
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
 
   const artists = [
@@ -42,13 +42,14 @@ export function BOFUSection() {
     { id: "artist3", name: "Neon Dreams" },
   ]
 
+  // Fetch all campaigns on component mount
   useEffect(() => {
-    const fetchSalesMetrics = async () => {
+    const fetchAllCampaigns = async () => {
       setLoading(true)
       try {
-        const response = await fetch(`/api/metrics/sales?artist=${selectedArtist}&campaign=${selectedCampaign}`)
+        const response = await fetch(`/api/metrics/sales?artist=all&campaign=all`)
         const data = await response.json()
-        setCampaigns(data.campaigns || [])
+        setAllCampaigns(data.campaigns || [])
       } catch (error) {
         console.error("Failed to fetch sales metrics:", error)
       } finally {
@@ -56,19 +57,104 @@ export function BOFUSection() {
       }
     }
 
-    fetchSalesMetrics()
-  }, [selectedArtist, selectedCampaign])
+    fetchAllCampaigns()
+  }, [])
+
+  // Handle artist selection
+  const handleArtistChange = (artistId: string) => {
+    setSelectedArtist(artistId)
+
+    if (artistId === "all") {
+      // If "All Artists" is selected, reset campaign to "all"
+      setSelectedCampaign("all")
+    } else {
+      // If a specific artist is selected, find their first campaign and select it
+      const artistMap = {
+        artist1: "Luna Martinez",
+        artist2: "Echo Rivers",
+        artist3: "Neon Dreams",
+      }
+
+      const artistName = artistMap[artistId as keyof typeof artistMap]
+      const artistCampaigns = allCampaigns.filter((campaign) => campaign.artist === artistName)
+
+      if (artistCampaigns.length > 0) {
+        setSelectedCampaign(artistCampaigns[0].id)
+      } else {
+        setSelectedCampaign("all")
+      }
+    }
+  }
+
+  // Handle campaign selection
+  const handleCampaignChange = (campaignId: string) => {
+    setSelectedCampaign(campaignId)
+  }
+
+  // Get filtered campaigns based on current selections
+  const getFilteredCampaigns = () => {
+    let filtered = allCampaigns
+
+    // Filter by artist if not "all"
+    if (selectedArtist !== "all") {
+      const artistMap = {
+        artist1: "Luna Martinez",
+        artist2: "Echo Rivers",
+        artist3: "Neon Dreams",
+      }
+      const artistName = artistMap[selectedArtist as keyof typeof artistMap]
+      filtered = filtered.filter((campaign) => campaign.artist === artistName)
+    }
+
+    // Filter by campaign if not "all"
+    if (selectedCampaign !== "all") {
+      filtered = filtered.filter((campaign) => campaign.id === selectedCampaign)
+    }
+
+    return filtered
+  }
+
+  // Get campaigns available for dropdown (always show all campaigns)
+  const getAvailableCampaigns = () => {
+    return allCampaigns
+  }
+
+  // Check if selected campaign belongs to selected artist
+  const isValidSelection = () => {
+    if (selectedArtist === "all" || selectedCampaign === "all") {
+      return true
+    }
+
+    const artistMap = {
+      artist1: "Luna Martinez",
+      artist2: "Echo Rivers",
+      artist3: "Neon Dreams",
+    }
+
+    const artistName = artistMap[selectedArtist as keyof typeof artistMap]
+    const selectedCampaignData = allCampaigns.find((c) => c.id === selectedCampaign)
+
+    return selectedCampaignData?.artist === artistName
+  }
 
   if (loading) {
     return <div>Loading sales metrics...</div>
   }
 
-  if (campaigns.length === 0) {
+  const campaigns = getFilteredCampaigns()
+  const availableCampaigns = getAvailableCampaigns()
+  const validSelection = isValidSelection()
+
+  // Show "no data" message only if selection is invalid
+  if (!validSelection) {
+    const selectedCampaignData = allCampaigns.find((c) => c.id === selectedCampaign)
+    const selectedArtistName = artists.find((a) => a.id === selectedArtist)?.name
+
     return (
       <div className="space-y-6">
         {/* Filters */}
         <div className="flex gap-4">
-          <Select value={selectedArtist} onValueChange={setSelectedArtist}>
+          <Select value={selectedArtist} onValueChange={handleArtistChange}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select Artist" />
             </SelectTrigger>
@@ -81,12 +167,17 @@ export function BOFUSection() {
             </SelectContent>
           </Select>
 
-          <Select value={selectedCampaign} onValueChange={setSelectedCampaign}>
+          <Select value={selectedCampaign} onValueChange={handleCampaignChange}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select Campaign" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Campaigns</SelectItem>
+              {availableCampaigns.map((campaign) => (
+                <SelectItem key={campaign.id} value={campaign.id}>
+                  {campaign.name} ({campaign.artist})
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -94,7 +185,57 @@ export function BOFUSection() {
         <Card className="p-6">
           <div className="text-center py-8">
             <h3 className="text-lg font-medium">No sales data available for the selected filters</h3>
-            <p className="text-muted-foreground mt-2">Try selecting a different artist or campaign</p>
+            <p className="text-muted-foreground mt-2">
+              Campaign &quot;{selectedCampaignData?.name}&quot; does not belong to artist &quot;{selectedArtistName}
+              &quot;.
+              <br />
+              Please select a different campaign or choose &quot;All Artists&quot;.
+            </p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  if (campaigns.length === 0) {
+    return (
+      <div className="space-y-6">
+        {/* Filters */}
+        <div className="flex gap-4">
+          <Select value={selectedArtist} onValueChange={handleArtistChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select Artist" />
+            </SelectTrigger>
+            <SelectContent>
+              {artists.map((artist) => (
+                <SelectItem key={artist.id} value={artist.id}>
+                  {artist.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedCampaign} onValueChange={handleCampaignChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select Campaign" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Campaigns</SelectItem>
+              {availableCampaigns.map((campaign) => (
+                <SelectItem key={campaign.id} value={campaign.id}>
+                  {campaign.name} ({campaign.artist})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Card className="p-6">
+          <div className="text-center py-8">
+            <h3 className="text-lg font-medium">No campaigns found</h3>
+            <p className="text-muted-foreground mt-2">
+              Please select a different campaign or choose &quot;All Artists&quot;.
+            </p>
           </div>
         </Card>
       </div>
@@ -159,7 +300,7 @@ export function BOFUSection() {
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex gap-4">
-        <Select value={selectedArtist} onValueChange={setSelectedArtist}>
+        <Select value={selectedArtist} onValueChange={handleArtistChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select Artist" />
           </SelectTrigger>
@@ -172,19 +313,37 @@ export function BOFUSection() {
           </SelectContent>
         </Select>
 
-        <Select value={selectedCampaign} onValueChange={setSelectedCampaign}>
+        <Select value={selectedCampaign} onValueChange={handleCampaignChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select Campaign" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Campaigns</SelectItem>
-            {campaigns.map((campaign) => (
+            {availableCampaigns.map((campaign) => (
               <SelectItem key={campaign.id} value={campaign.id}>
-                {campaign.name}
+                {campaign.name} ({campaign.artist})
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Selection Info */}
+      <div className="flex gap-2 text-sm text-muted-foreground">
+        <span>Showing:</span>
+        <span className="font-medium">
+          {selectedArtist === "all" ? "All Artists" : artists.find((a) => a.id === selectedArtist)?.name}
+        </span>
+        <span>•</span>
+        <span className="font-medium">
+          {selectedCampaign === "all"
+            ? "All Campaigns"
+            : availableCampaigns.find((c) => c.id === selectedCampaign)?.name}
+        </span>
+        <span>•</span>
+        <span className="font-medium">
+          {campaigns.length} campaign{campaigns.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
       {/* Overview Cards */}

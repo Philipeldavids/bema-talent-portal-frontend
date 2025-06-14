@@ -5,12 +5,21 @@ import { TOFUSection } from "@/components/tofu-section"
 import { MOFUSection } from "@/components/mofu-section"
 import { BOFUSection } from "@/components/bofu-section"
 import { Skeleton } from "@/components/ui/skeleton"
+import Logo from 'next/image'
 
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         <div className="mb-8">
+        <div className="flex space-x-5 items-center">
+          <Logo
+
+          src="/bema_logo.png"
+          alt="logo"
+          width ={80}
+          height={20}
+          />
           <h1
             className="text-3xl font-bold tracking-tight"
             style={{
@@ -21,6 +30,7 @@ export default function Dashboard() {
           >
             Bema Talent Portal
           </h1>
+          </div>
           <p className="text-muted-foreground">Full-funnel artist performance dashboard</p>
         </div>
 

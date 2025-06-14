@@ -61,6 +61,24 @@ export async function GET(request: NextRequest) {
         totalOrders: 764,
       },
     },
+    {
+      id: "sales4",
+      name: "Holiday Special Edition",
+      artist: "Luna Martinez",
+      status: "active",
+      salesMetrics: {
+        totalRevenue: 28750,
+        revenueBreakdown: {
+          bema: 12300,
+          patreon: 8900,
+          giveButter: 4200,
+          merch: 3350,
+        },
+        conversionRate: 4.7,
+        averageOrderValue: 31,
+        totalOrders: 927,
+      },
+    },
   ]
 
   let filteredCampaigns = mockCampaigns
