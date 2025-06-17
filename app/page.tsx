@@ -12,7 +12,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         <div className="mb-8">
-        <div className="flex space-x-5 items-center">
+          <div className="flex space-x-5 items-center">
           <Logo
 
           src="/bema_logo.png"

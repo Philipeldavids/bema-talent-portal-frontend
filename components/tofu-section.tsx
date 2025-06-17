@@ -4,13 +4,14 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Instagram, Twitter, Youtube, Users, Heart, Share2 } from "lucide-react"
+import { Instagram, Twitter, Youtube, Users, Heart, Share2, Facebook } from "lucide-react"
 
 interface SocialMetrics {
   platforms: {
     instagram: { followers: number; avgLikes: number; posts: number }
     twitter: { followers: number; avgLikes: number; posts: number }
     youtube: { followers: number; avgLikes: number; posts: number }
+    facebook: { followers: number; avgLikes: number; posts: number }
   }
   topContent: Array<{
     platform: string
@@ -63,6 +64,7 @@ export function TOFUSection() {
     instagram: Instagram,
     twitter: Twitter,
     youtube: Youtube,
+    facebook: Facebook,
   }
 
   // Platform color mapping
@@ -70,6 +72,7 @@ export function TOFUSection() {
     instagram: "#E4405F", // Instagram pink
     twitter: "#1DA1F2", // Twitter blue
     youtube: "#FF0000", // YouTube red
+    facebook: "#1877F2", // Facebook blue
   }
 
   return (
@@ -101,7 +104,7 @@ export function TOFUSection() {
       </div>
 
       {/* Platform Metrics */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Object.entries(metrics.platforms).map(([platform, data]) => {
           const Icon = platformIcons[platform as keyof typeof platformIcons]
           const color = platformColors[platform as keyof typeof platformColors]

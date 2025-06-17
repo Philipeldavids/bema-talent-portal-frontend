@@ -27,6 +27,11 @@ export async function GET(request: NextRequest) {
         avgLikes: Math.floor((Math.random() * 1000 + 200) * daysMultiplier),
         posts: Math.floor((Math.random() * 10 + 2) * daysMultiplier),
       },
+      facebook: {
+        followers: Math.floor(baseFollowers * 1.5 + Math.random() * 15000),
+        avgLikes: Math.floor((Math.random() * 300 + 80) * daysMultiplier),
+        posts: Math.floor((Math.random() * 15 + 3) * daysMultiplier),
+      },
     },
     topContent: [
       {
@@ -46,6 +51,12 @@ export async function GET(request: NextRequest) {
         content: 'Acoustic version of "Midnight Dreams" live session',
         shares: Math.floor(2100 * daysMultiplier),
         engagement: 12.3,
+      },
+      {
+        platform: "facebook",
+        content: "Thank you for all the love on our latest album! ❤️",
+        shares: Math.floor(1650 * daysMultiplier),
+        engagement: 9.8,
       },
     ],
     paidAds: {
